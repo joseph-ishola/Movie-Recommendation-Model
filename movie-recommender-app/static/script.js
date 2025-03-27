@@ -29,10 +29,10 @@ document.addEventListener('DOMContentLoaded', function() {
             // Simulate progress updates (since we can't get real-time updates easily)
             let progress = 0;
             const progressInterval = setInterval(function() {
-                progress += Math.random() * 5;
+                progress += Math.random() * 3;
                 if (progress > 95) {
                     clearInterval(progressInterval);
-                    progress = 95; // Cap at 95% until we get server confirmation
+                    progress = 98; // Cap at 95% until we get server confirmation
                 }
                 progressBar.style.width = progress + '%';
                 initStatus.textContent = 'Initializing model components... ' + Math.floor(progress) + '%';
