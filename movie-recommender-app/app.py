@@ -72,16 +72,32 @@ def recommend():
         # Format the movie title for filenames
         formatted_title = movie_title.lower().replace(' ', '_').replace(':', '').replace('/', '_')
         
-        # Generate visualizations with paths for the web app
-        chart_path = f"static/visualizations/{formatted_title}_similarity_chart.png"
-        wordcloud_path = f"static/visualizations/{formatted_title}_wordcloud.png"
+        # Define paths for where the files should be saved initially
+        temp_chart_path = f"pictures/{formatted_title}_similarity_chart.png"
+        temp_wordcloud_path = f"pictures/{formatted_title}_wordcloud.png"
         
-        # Generate and save visualizations
+        # Define paths for where the files should be moved to (for web access)
+        final_chart_path = f"static/visualizations/{formatted_title}_similarity_chart.png"
+        final_wordcloud_path = f"static/visualizations/{formatted_title}_wordcloud.png"
+        
+        # Make sure the pictures directory exists
+        os.makedirs('pictures', exist_ok=True)
+        
+        # Generate visualizations (these will save to the 'pictures' directory)
         movie_recommender.visualize_recommendations(recommendations, movie_title)
         movie_recommender.generate_wordcloud(recommendations, movie_title)
         
-        # Move files to the correct location if needed
-        # This depends on how your visualize_recommendations method saves files
+        # Move files to the static/visualizations directory
+        import shutil
+        if os.path.exists(temp_chart_path):
+            shutil.copy2(temp_chart_path, final_chart_path)
+        else:
+            return jsonify({'status': 'error', 'message': f'Visualization file not generated: {temp_chart_path}'})
+            
+        if os.path.exists(temp_wordcloud_path):
+            shutil.copy2(temp_wordcloud_path, final_wordcloud_path)
+        else:
+            return jsonify({'status': 'error', 'message': f'Wordcloud file not generated: {temp_wordcloud_path}'})
         
         # Get evaluation metrics
         eval_metrics = movie_recommender.evaluation_framework(recommendations, input_idx)
@@ -89,8 +105,8 @@ def recommend():
         return jsonify({
             'status': 'success',
             'recommendations': recommendations_list,
-            'chart_path': chart_path,
-            'wordcloud_path': wordcloud_path,
+            'chart_path': f"/static/visualizations/{formatted_title}_similarity_chart.png",
+            'wordcloud_path': f"/static/visualizations/{formatted_title}_wordcloud.png",
             'metrics': eval_metrics
         })
     
