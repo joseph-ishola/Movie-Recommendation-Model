@@ -72,32 +72,18 @@ def recommend():
         # Format the movie title for filenames
         formatted_title = movie_title.lower().replace(' ', '_').replace(':', '').replace('/', '_')
         
-        # Define paths for where the files should be saved initially
-        temp_chart_path = f"pictures/{formatted_title}_similarity_chart.png"
-        temp_wordcloud_path = f"pictures/{formatted_title}_wordcloud.png"
+        # Set up paths for saving visualizations directly to static folder
+        static_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static')
+        chart_save_path = os.path.join(static_folder, f"visualizations/{formatted_title}_similarity_chart.png")
+        wordcloud_save_path = os.path.join(static_folder, f"visualizations/{formatted_title}_wordcloud.png")
         
-        # Define paths for where the files should be moved to (for web access)
-        final_chart_path = f"static/visualizations/{formatted_title}_similarity_chart.png"
-        final_wordcloud_path = f"static/visualizations/{formatted_title}_wordcloud.png"
+        # For web display, use these paths
+        chart_path = f"/static/visualizations/{formatted_title}_similarity_chart.png"
+        wordcloud_path = f"/static/visualizations/{formatted_title}_wordcloud.png"
         
-        # Make sure the pictures directory exists
-        os.makedirs('pictures', exist_ok=True)
-        
-        # Generate visualizations (these will save to the 'pictures' directory)
-        movie_recommender.visualize_recommendations(recommendations, movie_title)
-        movie_recommender.generate_wordcloud(recommendations, movie_title)
-        
-        # Move files to the static/visualizations directory
-        import shutil
-        if os.path.exists(temp_chart_path):
-            shutil.copy2(temp_chart_path, final_chart_path)
-        else:
-            return jsonify({'status': 'error', 'message': f'Visualization file not generated: {temp_chart_path}'})
-            
-        if os.path.exists(temp_wordcloud_path):
-            shutil.copy2(temp_wordcloud_path, final_wordcloud_path)
-        else:
-            return jsonify({'status': 'error', 'message': f'Wordcloud file not generated: {temp_wordcloud_path}'})
+        # Generate visualizations directly to the static folder
+        movie_recommender.visualize_recommendations(recommendations, movie_title, output_path=chart_save_path)
+        movie_recommender.generate_wordcloud(recommendations, movie_title, output_path=wordcloud_save_path)
         
         # Get evaluation metrics
         eval_metrics = movie_recommender.evaluation_framework(recommendations, input_idx)
@@ -105,8 +91,8 @@ def recommend():
         return jsonify({
             'status': 'success',
             'recommendations': recommendations_list,
-            'chart_path': f"/static/visualizations/{formatted_title}_similarity_chart.png",
-            'wordcloud_path': f"/static/visualizations/{formatted_title}_wordcloud.png",
+            'chart_path': chart_path,
+            'wordcloud_path': wordcloud_path,
             'metrics': eval_metrics
         })
     
@@ -119,7 +105,7 @@ if __name__ == '__main__':
     os.makedirs('static/visualizations', exist_ok=True)
     
     # Get port from environment variable or use 5000 as default
-    port = int(os.environ.get('PORT', 80))
+    #port = int(os.environ.get('PORT', 80))
     
     # Run the Flask app
-    app.run(host='0.0.0.0', port=port, debug=True)
+    app.run(host='0.0.0.0', port=80, debug=True)

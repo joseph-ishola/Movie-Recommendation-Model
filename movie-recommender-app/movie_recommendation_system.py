@@ -16,6 +16,7 @@ from scipy.sparse import csr_matrix, hstack
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 import seaborn as sns
+import os
 sns.set()
 
 class MovieRecommendationSystem:
@@ -344,7 +345,7 @@ class MovieRecommendationSystem:
             'average_content_relevance': avg_content_relevance
         }
     
-    def visualize_recommendations(self, recommendations, title):
+    def visualize_recommendations(self, recommendations, title, output_path=None):
         """
         Visualization utility to create a bar chart of similarity scores.
         
@@ -354,6 +355,8 @@ class MovieRecommendationSystem:
             The dataframe of recommended movies
         title : str
             The title of the input movie
+        output_path : str, optional
+            Custom path to save the visualization. If None, uses default location.
             
         Returns:
         --------
@@ -362,7 +365,13 @@ class MovieRecommendationSystem:
         """
         # Format the title to be filename-friendly
         formatted_title = title.lower().replace(' ', '_').replace(':', '').replace('/', '_')
-        output_path = f'pictures/{formatted_title}_similarity_chart.png'
+
+        # Set the default output path
+        if output_path is None:
+            output_path = f'pictures/{formatted_title}_similarity_chart.png'
+
+        # Ensure the directory exists
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
         
         # Create a new figure
         plt.figure(figsize=(12, 8))
@@ -377,12 +386,14 @@ class MovieRecommendationSystem:
         # Save the figure
         plt.tight_layout()
         plt.savefig(output_path)
-        print(f"Visualization saved to {output_path}")
+        #print(f"Visualization saved to {output_path}")
         
-        # Show the figure in the notebook
-        plt.show()
+        # Close the figure to prevent display in non-interactive environments
+        plt.close()
+
+        #return output_path
     
-    def generate_wordcloud(self, recommendations, title):
+    def generate_wordcloud(self, recommendations, title, output_path=None):
         """
         Visualization utility to create a word cloud from movie overviews.
         
@@ -392,6 +403,8 @@ class MovieRecommendationSystem:
             The dataframe of recommended movies
         title : str
             The title of the input movie
+        output_path : str, optional
+            Custom path to save the visualization. If None, uses default location.
             
         Returns:
         --------
@@ -400,7 +413,12 @@ class MovieRecommendationSystem:
         """
         # Format the title to be filename-friendly
         formatted_title = title.lower().replace(' ', '_').replace(':', '').replace('/', '_')
-        output_path = f'pictures/{formatted_title}_wordcloud.png'
+
+        if output_path is None:
+            output_path = f'pictures/{formatted_title}_wordcloud.png'
+        
+        # Ensure the directory exists
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
         
         # Combine all overviews
         combined_overview = ' '.join(recommendations['overview'].tolist())
@@ -425,8 +443,10 @@ class MovieRecommendationSystem:
         plt.savefig(output_path)
         print(f"Word cloud saved to {output_path}")
         
-        # Show the figure in the notebook
-        plt.show()
+        # Close the figure to prevent display in non-interactive environments
+        plt.close()
+
+        #return output_path
 
 
 # if __name__ == "__main__":
