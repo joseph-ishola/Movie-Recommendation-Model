@@ -1,0 +1,73 @@
+/* static/style.css */
+body {
+    background-color: #f8f9fa;
+    position: relative;
+    min-height: 100vh;
+    padding-bottom: 100px; /* Space for footer */
+}
+
+header {
+    margin-bottom: 30px;
+}
+
+.card {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.card-header {
+    font-weight: 500;
+}
+
+table {
+    background-color: white;
+}
+
+.table th {
+    background-color: #f1f5f9;
+}
+
+.display-4 {
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: #4299e1;
+}
+
+footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+    
+    .display-4 {
+        font-size: 2rem;
+    }
+    
+    body {
+        padding-bottom: 150px;
+    }
+}
+
+/* Animation for loading */
+.progress-bar-animated {
+    animation: progress-bar-stripes 1s linear infinite;
+}
+
+/* Hover effect for recommendation rows */
+.table tbody tr:hover {
+    background-color: #f0f7ff;
+    cursor: pointer;
+}
+
+/* Improve image display */
+#similarityChart, #wordcloud {
+    max-height: 400px;
+    object-fit: contain;
+    margin: 0 auto;
+}
