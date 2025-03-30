@@ -416,11 +416,11 @@ class MovieRecommendationSystem:
         
         # Create a bar chart of similarity scores
         plt.barh(recommendations['title'], recommendations['similarity_score'], color='skyblue')
-        plt.xlabel('Similarity Score', fontsize=18)
-        plt.ylabel('Movie Title', fontsize=18)
-        plt.xticks(fontsize=16)
-        plt.yticks(fontsize=16)
-        plt.title(f'Movies Similar to "{title}"', fontsize=20)
+        plt.xlabel('Similarity Score', fontsize=22)
+        plt.ylabel('Movie Title', fontsize=22)
+        plt.xticks(fontsize=18)
+        plt.yticks(fontsize=20)
+        plt.title(f'Movies Similar to "{title}"', fontsize=25)
         plt.gca().invert_yaxis()  # Invert y-axis to have the highest similarity at the top
         
         # Save the figure
@@ -473,14 +473,14 @@ class MovieRecommendationSystem:
             width=800, 
             height=500, 
             background_color='white',
-            max_words=200, 
+            max_words=250, 
             contour_width=3, 
             contour_color='steelblue'
         )
         wordcloud.generate(combined_overview)
         
         # Create a new figure for the wordcloud
-        plt.figure(figsize=(10, 7))
+        plt.figure(figsize=(12, 8))
         plt.imshow(wordcloud, interpolation='bilinear')
         plt.axis('off')
         
