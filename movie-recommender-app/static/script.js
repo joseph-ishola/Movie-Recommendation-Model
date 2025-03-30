@@ -108,6 +108,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     showMultipleMatchesUI(data.matches, movieTitle);
                     return;
                 }
+
+                // Check if no matching movie was found
+                if (data.status === 'no_match') {
+                    showNoMatchUI(data.message, data.similar_titles, movieTitle);
+                    return;
+                }
                 
                 // Display recommendations
                 displayRecommendations(data);
@@ -188,6 +194,59 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.error('Error:', error);
                 });
             });
+        });
+    }
+
+    // Add this function to display a UI when no match is found
+    function showNoMatchUI(message, similarTitles, searchedTitle) {
+        let similarTitlesHTML = '';
+        
+        if (similarTitles && similarTitles.length > 0) {
+            similarTitlesHTML = `
+                <p>Did you mean one of these?</p>
+                <div class="list-group mb-3">
+                    ${similarTitles.map(movie => `
+                        <button type="button" class="list-group-item list-group-item-action similar-title"
+                                data-title="${movie.title}">
+                            ${movie.title} (${movie.release_date})
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+        } else {
+            similarTitlesHTML = `<p>No similar titles were found.</p>`;
+        }
+        
+        const noMatchHTML = `
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h3 class="card-title mb-0">Movie Not Found</h3>
+                </div>
+                <div class="card-body">
+                    <p>${message}</p>
+                    ${similarTitlesHTML}
+                    <button class="btn btn-primary mt-3" id="newSearchBtn">Try Another Search</button>
+                </div>
+            </div>
+        `;
+        
+        recommendationsContainer.innerHTML = noMatchHTML;
+        recommendationsContainer.style.display = 'block';
+        
+        // Add event listeners to similar title buttons
+        document.querySelectorAll('.similar-title').forEach(button => {
+            button.addEventListener('click', function() {
+                const movieTitle = this.getAttribute('data-title');
+                document.getElementById('movieTitle').value = movieTitle;
+                document.getElementById('recommendForm').dispatchEvent(new Event('submit'));
+            });
+        });
+        
+        // Add event listener to the new search button
+        document.getElementById('newSearchBtn').addEventListener('click', function() {
+            document.getElementById('movieTitle').value = '';
+            document.getElementById('movieTitle').focus();
+            resultsDiv.style.display = 'none';
         });
     }
 

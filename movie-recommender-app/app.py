@@ -55,14 +55,21 @@ def recommend():
         # Get recommendations
         if choice_index is not None:
             choice_index = int(choice_index)
-        result = movie_recommender.recommendation_service(movie_title, choice_index=choice_index)
+        result = movie_recommender.recommendation_service(movie_title, choice_index=choice_index, exact_match=True)
         
         # Check if we got multiple matches
-        if isinstance(result, dict) and 'multiple_matches' in result:
-            return jsonify({
-                'status': 'multiple_matches',
-                'matches': result['multiple_matches']
-            })
+        if isinstance(result, dict):
+            if 'multiple_matches' in result:
+                return jsonify({
+                    'status': 'multiple_matches',
+                    'matches': result['multiple_matches']
+                })
+            elif 'no_match' in result:
+                return jsonify({
+                    'status': 'no_match',
+                    'message': f'The movie "{movie_title}" does not exist in our database.',
+                    'similar_titles': result.get('similar_titles', [])
+                })
         
         input_idx, recommendations = result
         

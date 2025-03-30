@@ -201,7 +201,7 @@ class MovieRecommendationSystem:
         
         return self.cosine_sim
     
-    def recommendation_service(self, title, top_n=5, choice_index=None):
+    def recommendation_service(self, title, top_n=5, choice_index=None, exact_match=True):
         """
         Recommendation Service: Provides the interface for retrieving and rendering recommendations.
         
@@ -213,12 +213,15 @@ class MovieRecommendationSystem:
             Number of recommendations to return
         choice_index : int, optional
             Index of the movie to choose when multiple matches exist
+        exact_match : bool, default=True
+            If True, only return recommendations for exact title matches
             
         Returns:
         --------
         tuple or dict
             If multiple matches found and no choice_index: returns {'multiple_matches': list_of_matches}
             If single match or choice_index provided: returns (input_movie_index, recommendations_dataframe)
+            If no match found: returns {'no_match': True, 'similar_titles': list_of_similar_titles}
         """
         # Ensure similarity matrix is computed
         if self.cosine_sim is None:
@@ -230,15 +233,32 @@ class MovieRecommendationSystem:
         # Find the index of the movie that matches the title
         indices = pd.Series(self.movies_df.index, index=self.movies_df['title'].str.lower())
         
-        # Handle titles not found exactly
+        # Check for exact match
         if title not in indices:
-            closest_titles = self.movies_df[self.movies_df['title'].str.contains(title, case=False, na=False)]
-            if len(closest_titles) > 0:
-                title = closest_titles.iloc[0]['title'].lower()
-                print(f"Title not found exactly. Using closest match: '{closest_titles.iloc[0]['title']}'")
+            # If exact matching is required, look for similar titles to suggest
+            if exact_match:
+                closest_titles = self.movies_df[self.movies_df['title'].str.contains(title, case=False, na=False)]
+                
+                # Return top 5 similar titles as suggestions
+                if len(closest_titles) > 0:
+                    suggestions = []
+                    for _, row in closest_titles.head(5).iterrows():
+                        suggestions.append({
+                            'title': row['title'],
+                            'release_date': row['release_date']
+                        })
+                    return {'no_match': True, 'similar_titles': suggestions}
+                else:
+                    return {'no_match': True, 'similar_titles': []}
             else:
-                print(f"No title containing '{title}' found.")
-                return None, pd.DataFrame()
+                # For partial matching, use the closest title
+                closest_titles = self.movies_df[self.movies_df['title'].str.contains(title, case=False, na=False)]
+                if len(closest_titles) > 0:
+                    title = closest_titles.iloc[0]['title'].lower()
+                    print(f"Title not found exactly. Using closest match: '{closest_titles.iloc[0]['title']}'")
+                else:
+                    print(f"No title containing '{title}' found.")
+                    return {'no_match': True, 'similar_titles': []}
         
         idx = indices[title]
         
@@ -281,7 +301,8 @@ class MovieRecommendationSystem:
         # Return recommended movies with relevant information
         return idx, recommendations[['title', 'genre_names', 'vote_average', 
                                 'release_date', 'similarity_score', 'overview']]
-    
+
+
     def evaluation_framework(self, recommendations, input_idx):
         """
         Evaluation Framework: Calculates and reports performance metrics.
