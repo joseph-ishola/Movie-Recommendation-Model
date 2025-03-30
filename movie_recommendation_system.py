@@ -379,8 +379,8 @@ class MovieRecommendationSystem:
         plt.savefig(output_path)
         print(f"Visualization saved to {output_path}")
         
-        # Show the figure in the notebook
-        plt.show()
+        # Close the figure to prevent display in non-interactive environments
+        plt.close()
     
     def generate_wordcloud(self, recommendations, title):
         """
@@ -425,8 +425,8 @@ class MovieRecommendationSystem:
         plt.savefig(output_path)
         print(f"Word cloud saved to {output_path}")
         
-        # Show the figure in the notebook
-        plt.show()
+        # Close the figure to prevent display in non-interactive environments
+        plt.close()
 
 
 # if __name__ == "__main__":
