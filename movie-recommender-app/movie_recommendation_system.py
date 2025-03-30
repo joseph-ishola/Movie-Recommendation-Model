@@ -201,7 +201,7 @@ class MovieRecommendationSystem:
         
         return self.cosine_sim
     
-    def recommendation_service(self, title, top_n=5):
+    def recommendation_service(self, title, top_n=5, choice_index=None):
         """
         Recommendation Service: Provides the interface for retrieving and rendering recommendations.
         
@@ -211,11 +211,14 @@ class MovieRecommendationSystem:
             The title of the movie to get recommendations for
         top_n : int, default=5
             Number of recommendations to return
+        choice_index : int, optional
+            Index of the movie to choose when multiple matches exist
             
         Returns:
         --------
-        tuple
-            A tuple containing (input_movie_index, recommendations_dataframe)
+        tuple or dict
+            If multiple matches found and no choice_index: returns {'multiple_matches': list_of_matches}
+            If single match or choice_index provided: returns (input_movie_index, recommendations_dataframe)
         """
         # Ensure similarity matrix is computed
         if self.cosine_sim is None:
@@ -241,13 +244,21 @@ class MovieRecommendationSystem:
         
         # Handle multiple movies with the same title
         if isinstance(idx, pd.Series):
-            print(f"Multiple movies found for '{title}':")
-            for i, index in enumerate(idx):
-                movie_info = self.movies_df.loc[index, ['title', 'release_date']]
-                print(f"{i+1}. {movie_info['title']} ({movie_info['release_date']})")
-            
-            choice = int(input("Enter the number of the movie you meant: ")) - 1
-            idx = idx.iloc[choice]
+            # If no choice index provided, return the list of matches
+            if choice_index is None:
+                matches = []
+                for i, index in enumerate(idx):
+                    movie_info = self.movies_df.loc[index, ['title', 'release_date']]
+                    matches.append({
+                        'index': i,
+                        'movie_id': int(index),
+                        'title': movie_info['title'],
+                        'release_date': movie_info['release_date']
+                    })
+                return {'multiple_matches': matches}
+            else:
+                # Use the provided choice index
+                idx = idx.iloc[int(choice_index)]
         
         # Get the pairwise similarity scores for all movies with the target movie
         sim_scores = list(enumerate(self.cosine_sim[idx]))
@@ -269,7 +280,7 @@ class MovieRecommendationSystem:
         
         # Return recommended movies with relevant information
         return idx, recommendations[['title', 'genre_names', 'vote_average', 
-                                   'release_date', 'similarity_score', 'overview']]
+                                'release_date', 'similarity_score', 'overview']]
     
     def evaluation_framework(self, recommendations, input_idx):
         """
@@ -363,6 +374,12 @@ class MovieRecommendationSystem:
         matplotlib.figure.Figure
             The figure object containing the visualization
         """
+
+        # We use the 'Agg' backend which doesn't require Tkinter
+        import matplotlib
+        matplotlib.use('Agg')
+        import matplotlib.pyplot as plt
+
         # Format the title to be filename-friendly
         formatted_title = title.lower().replace(' ', '_').replace(':', '').replace('/', '_')
 
@@ -378,18 +395,20 @@ class MovieRecommendationSystem:
         
         # Create a bar chart of similarity scores
         plt.barh(recommendations['title'], recommendations['similarity_score'], color='skyblue')
-        plt.xlabel('Similarity Score')
-        plt.ylabel('Movie Title')
-        plt.title(f'Movies Similar to "{title}"')
+        plt.xlabel('Similarity Score', fontsize=18)
+        plt.ylabel('Movie Title', fontsize=18)
+        plt.xticks(fontsize=16)
+        plt.yticks(fontsize=16)
+        plt.title(f'Movies Similar to "{title}"', fontsize=20)
         plt.gca().invert_yaxis()  # Invert y-axis to have the highest similarity at the top
         
         # Save the figure
         plt.tight_layout()
         plt.savefig(output_path)
-        #print(f"Visualization saved to {output_path}")
+        print(f"Visualization saved to {output_path}")
         
-        # Close the figure to prevent display in non-interactive environments
-        plt.close()
+        # Close the figure to prevent display in non-interactive environments and clean up
+        plt.close('all')
 
         #return output_path
     
@@ -411,6 +430,11 @@ class MovieRecommendationSystem:
         wordcloud.WordCloud
             The generated word cloud object
         """
+        # We use the 'Agg' backend which doesn't require Tkinter
+        import matplotlib
+        matplotlib.use('Agg')
+        import matplotlib.pyplot as plt
+
         # Format the title to be filename-friendly
         formatted_title = title.lower().replace(' ', '_').replace(':', '').replace('/', '_')
 
@@ -443,8 +467,8 @@ class MovieRecommendationSystem:
         plt.savefig(output_path)
         print(f"Word cloud saved to {output_path}")
         
-        # Close the figure to prevent display in non-interactive environments
-        plt.close()
+        # Close the figure to prevent display in non-interactive environments and clean up
+        plt.close('all')
 
         #return output_path
 

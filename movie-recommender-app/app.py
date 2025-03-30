@@ -38,6 +38,9 @@ def initialize_model():
     else:
         return jsonify({'status': 'success', 'message': 'Model already initialized'})
 
+import matplotlib
+matplotlib.use('Agg')  # Set non-interactive backend at application startup
+
 @app.route('/recommend', methods=['POST'])
 def recommend():
     global model_ready
@@ -46,10 +49,22 @@ def recommend():
         return jsonify({'status': 'error', 'message': 'Model not initialized yet'})
     
     movie_title = request.form['movie_title']
+    choice_index = request.form.get('choice_index')  # Get choice_index if provided
     
     try:
         # Get recommendations
-        input_idx, recommendations = movie_recommender.recommendation_service(movie_title)
+        if choice_index is not None:
+            choice_index = int(choice_index)
+        result = movie_recommender.recommendation_service(movie_title, choice_index=choice_index)
+        
+        # Check if we got multiple matches
+        if isinstance(result, dict) and 'multiple_matches' in result:
+            return jsonify({
+                'status': 'multiple_matches',
+                'matches': result['multiple_matches']
+            })
+        
+        input_idx, recommendations = result
         
         if recommendations.empty:
             return jsonify({'status': 'error', 'message': 'No recommendations found'})
@@ -88,6 +103,9 @@ def recommend():
         # Get evaluation metrics
         eval_metrics = movie_recommender.evaluation_framework(recommendations, input_idx)
         
+        import matplotlib.pyplot as plt
+        plt.close('all')  # Close all open figures to free up memory
+
         return jsonify({
             'status': 'success',
             'recommendations': recommendations_list,
@@ -97,8 +115,12 @@ def recommend():
         })
     
     except Exception as e:
+        import matplotlib.pyplot as plt
+        plt.close('all')  # Make sure to close all plot windows
         app.logger.error(f"Error generating recommendations: {str(e)}")
         return jsonify({'status': 'error', 'message': f'Error: {str(e)}'})
+
+
 
 if __name__ == '__main__':
     # Create visualizations directory if it doesn't exist
