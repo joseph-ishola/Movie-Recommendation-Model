@@ -449,7 +449,9 @@
             <li><a href="#results">Results</a></li>
             <li><a href="#evaluation">Evaluation</a></li>
             <li><a href="#technical-implementation">Technical Details</a></li>
+            <li><a href="#flask-deployment">Web Application Demo</a></li>
             <li><a href="#conclusion">Conclusion</a></li>
+            
         </ul>
     </nav>
 
@@ -1363,6 +1365,284 @@ def run_interactive_mode(csv_path='movies_metadata.csv'):
             <p>These decisions optimize the balance between memory usage, computation time, and recommendation quality for the target use case.</p>
         </section>
 
+        <section id="flask-deployment">
+            <h2>Web Application Demo</h2>
+            <p>To transform our recommendation model from a theoretical exercise to a practical tool, I developed a user-friendly web application using Flask, a lightweight Python web framework. This section details the implementation process, architecture, and key features of the deployed application.</p>
+            
+            <div class="highlight">
+                <p><strong>Key Achievement:</strong> Successfully bridged the gap between data science and software engineering by deploying a complex machine learning model as an intuitive, responsive web application accessible to users without technical expertise.</p>
+            </div>
+            
+            <h3>Architecture Overview</h3>
+            
+            <div class="methodology-grid">
+                <div class="method-card">
+                    <i class="fas fa-server"></i>
+                    <h4>Backend (Flask)</h4>
+                    <p>Python-based server handling model initialization, recommendation generation, and visualization creation</p>
+                </div>
+                
+                <div class="method-card">
+                    <i class="fas fa-desktop"></i>
+                    <h4>Frontend (HTML/CSS/JS)</h4>
+                    <p>Responsive, interactive user interface with Bootstrap styling and dynamic content updates via JavaScript</p>
+                </div>
+                
+                <div class="method-card">
+                    <i class="fas fa-project-diagram"></i>
+                    <h4>Model Integration</h4>
+                    <p>Wrapping the recommendation algorithm in a modular class structure for smooth web integration, like packing a toolkit for easy use</p>
+                </div>
+                
+                <div class="method-card">
+                    <i class="fas fa-chart-line"></i>
+                    <h4>Visualization Pipeline</h4>
+                    <p>Automated generation of charts and visualizations for each recommendation query</p>
+                </div>
+            </div>
+            
+            <div class="feature-box">
+                <h3>Project Structure</h3>
+                <p>The application follows a structured organization pattern to maintain clarity and modularity:</p>
+                
+<pre><code class="language-text">movie-recommender-app/
+├── app.py                  # Main Flask application
+├── static/                 # Static files (CSS, JS, images)
+│   ├── style.css
+│   ├── script.js
+│   └── visualizations/     # Folder for generated charts and wordclouds
+├── templates/              # HTML templates
+│   └── index.html
+├── movie_recommendation_system.py  # Recommendation engine module
+└── movies_metadata.csv     # Dataset</code></pre>
+        
+                <p>This organization separates concerns between data processing, visualization, and user interface components, making the codebase maintainable and extensible.</p>
+            </div>
+        
+            <h3>Backend Implementation</h3>
+            
+            <p>The backend architecture was designed with several key considerations in mind:</p>
+            
+            <div class="process-step">
+                <h4>1. Modular API Design</h4>
+                <p>The Flask application exposes a clean, RESTful API with endpoints for model initialization and recommendation retrieval. This approach aim to separate the frontend from the backend logic, this will allow for future expansion to mobile apps or other interfaces.</p>
+                
+<pre><code class="language-python"># Route for initializing the recommendation model
+@app.route('/initialize', methods=['GET'])
+def initialize_model():
+    global model_ready
+    
+    if not model_ready:
+        try:
+            # Initialize the model in the background
+            movie_recommender.data_ingestion('movies_metadata.csv')
+            movie_recommender.preprocessing_pipeline()
+            movie_recommender.similarity_engine()
+            
+            model_ready = True
+            return jsonify({'status': 'success', 'message': 'Model initialized successfully'})
+        except Exception as e:
+            return jsonify({'status': 'error', 'message': f'Error initializing model: {str(e)}'})
+    else:
+        return jsonify({'status': 'success', 'message': 'Model already initialized'})
+
+# Route for generating recommendations
+@app.route('/recommend', methods=['POST'])
+def recommend():
+    if not model_ready:
+        return jsonify({'status': 'error', 'message': 'Model not initialized yet'})
+    
+    movie_title = request.form['movie_title']
+    choice_index = request.form.get('choice_index')
+    
+    try:
+        result = movie_recommender.recommendation_service(movie_title, choice_index=choice_index)
+        # Process result and return recommendations
+        # ...
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': f'Error: {str(e)}'})</code></pre>
+            </div>
+            
+            <div class="process-step">
+                <h4>2. Asynchronous Processing</h4>
+                <p>One significant challenge was handling the time-consuming initialization process. To provide a responsive user experience, I implemented an asynchronous initialization flow with real-time progress updates:</p>
+                
+                <div class="visualization">
+                    <img src="/api/placeholder/800/400" alt="Movie Recommender Web Interface" class="img-fluid">
+                    <p class="caption">The movie recommendation system web interface, showing the initialization</p>
+                </div>
+
+                <p>This implementation allows users to start the initialization process and receive visual feedback while the system loads the dataset and computes the similarity matrix in the background.</p>
+            </div>
+            
+            <div class="process-step">
+                <h4>3. Complex Edge Case Handling</h4>
+                <p>The recommendation system must handle various edge cases gracefully, including movie titles not found in the database, multiple movies with the same title, and varying formats of input. I implemented a robust handling mechanism:</p>
+                
+                <div class="visualization">
+                    <img src="/api/placeholder/800/400" alt="Movie Recommender Web Interface" class="img-fluid">
+                    <p class="caption">The movie recommendation system web interface, showing edge case handling and helpful suggestion for recommendations</p>
+                </div>
+
+                <p>This implementation provides users with helpful suggestions when their exact search term isn't found, significantly improving the user experience.</p>
+            </div>
+            
+            <div class="process-step">
+                <h4>4. Dynamic Visualization Generation</h4>
+                <p>Each recommendation query triggers the creation of custom visualizations specific to those results. I implemented a pipeline that generates, saves, and serves these visualizations to the user:</p>
+                
+                
+                <p>This approach ensures that each recommendation request receives tailored visualizations that enhance understanding of why specific movies were recommended.</p>
+            </div>
+            
+            <h3>Frontend Design and Implementation</h3>
+            
+            <p>The frontend was designed to provide an intuitive, visually appealing interface that balances simplicity with information-rich displays:</p>
+            
+            <div class="visualization">
+                <img src="/api/placeholder/800/400" alt="Movie Recommender Web Interface" class="img-fluid">
+                <p class="caption">The movie recommendation system web interface, showing the search input and recommendation results</p>
+            </div>
+            
+            <div class="process-step">
+                <h4>1. Progressive UI States</h4>
+                <p>The interface adapts to different stages of the recommendation process, providing appropriate feedback at each step:</p>
+                <ul>
+                    <li><strong>Initial State:</strong> Model initialization prompt with clear instructions</li>
+                    <li><strong>Loading State:</strong> Visual progress indicators during model initialization and recommendation generation</li>
+                    <li><strong>Multiple Matches:</strong> Selection interface when multiple movies match the search term</li>
+                    <li><strong>No Matches:</strong> Helpful suggestions when no exact match is found</li>
+                    <li><strong>Results State:</strong> Comprehensive display of recommendations with visualizations</li>
+                </ul>
+                
+            </div>
+            
+            <div class="process-step">
+                <h4>2. Dynamic Content Updates</h4>
+                <p>To provide a seamless experience, the frontend uses JavaScript to dynamically update content without page reloads. This is implemented through a combination of event listeners and DOM manipulation:</p>
+                
+
+            </div>
+            
+            <div class="process-step">
+                <h4>3. Responsive Design</h4>
+                <p>The interface is built with Bootstrap and custom CSS to ensure a consistent experience across devices of all sizes. Key responsive design elements include:</p>
+                <ul>
+                    <li>Fluid grid layout that adapts to different screen sizes</li>
+                    <li>Mobile-friendly UI components like cards and buttons</li>
+                    <li>Responsive tables that can be viewed on small screens</li>
+                    <li>Optimized loading states for slower connections</li>
+                </ul>
+                
+            </div>
+        
+            <h3>User Experience Design</h3>
+            
+            <p>A recommendation system is only as good as its user experience. I implemented several key UX features to enhance usability:</p>
+            
+            <div class="methodology-grid">
+                <div class="method-card">
+                    <i class="fas fa-spinner"></i>
+                    <h4>Progress Feedback</h4>
+                    <p>Visual progress indicators during initialization and loading states</p>
+                    <div class="code-snippet">
+<pre><code class="language-javascript">// Simulate progress updates
+let progress = 0;
+const progressInterval = setInterval(function() {
+    progress += Math.random() * 3;
+    if (progress > 95) {
+        clearInterval(progressInterval);
+        progress = 98;
+    }
+    progressBar.style.width = progress + '%';
+    initStatus.textContent = 'Initializing model components... ' + Math.floor(progress) + '%';
+}, 1000);</code></pre>
+                    </div>
+                </div>
+                
+                <div class="method-card">
+                    <i class="fas fa-search"></i>
+                    <h4>Smart Search</h4>
+                    <p>Handling of partial matches and suggestions for similar titles</p>
+                    <div class="code-snippet">
+<pre><code class="language-python"># When exact match isn't found
+if title not in indices:
+    closest_titles = df[df['title'].str.contains(title, case=False, na=False)]
+    if len(closest_titles) > 0:
+        suggestions = []
+        for _, row in closest_titles.head(5).iterrows():
+            suggestions.append({
+                'title': row['title'],
+                'release_date': row['release_date']
+            })
+        return {'no_match': True, 'similar_titles': suggestions}</code></pre>
+                    </div>
+                </div>
+                
+                <div class="method-card">
+                    <i class="fas fa-chart-bar"></i>
+                    <h4>Visual Insights</h4>
+                    <p>Automatically generated visualizations for recommendation context</p>
+                    <div class="code-snippet">
+<pre><code class="language-javascript">// Display visualizations with cache-busting
+&lt;img src="${data.chart_path}?t=${new Date().getTime()}" 
+        class="img-fluid rounded" 
+        alt="Similarity chart"&gt;</code></pre>
+                    </div>
+                </div>
+                
+                <div class="method-card">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <h4>Error Handling</h4>
+                    <p>User-friendly error messages with helpful recovery suggestions</p>
+                    <div class="code-snippet">
+<pre><code class="language-javascript">// Error handling in the UI
+if (data.status === 'error') {
+    errorMessage.textContent = data.message;
+    errorMessage.style.display = 'block';
+    return;
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+            
+            
+            <h3>Technical Challenges & Solutions</h3>
+            
+            <div class="feature-box">
+                <h4>Memory Management for Large Models</h4>
+                <p>A significant challenge was managing memory efficiently when loading the large similarity matrix and feature vectors in a web server context. I addressed this through several techniques:</p>
+                
+                <ul>
+                    <li><strong>Dimensionality Reduction:</strong> Using TruncatedSVD to reduce the feature space from 77,558 to 2,000 dimensions while preserving 85% of the variance</li>
+                    <li><strong>Sparse Matrix Representation:</strong> Utilizing scipy's sparse matrix formats to minimize memory usage</li>
+                    <li><strong>On-Demand Computation:</strong> Computing certain metrics only when needed rather than precomputing everything</li>
+                    <li><strong>Resource Cleanup:</strong> Explicit cleanup of Matplotlib figures after visualization generation to prevent memory leaks</li>
+                </ul>
+                
+<pre><code class="language-python"># Memory optimization with explicit cleanup
+import matplotlib.pyplot as plt
+
+# After generating and saving visualizations
+plt.close('all')  # Close all open figures to free up memory</code></pre>
+            </div>
+            
+            <div class="conclusion">
+                <h4>Scalability and Future Work</h4>
+                <p>While the current implementation works well for demonstration purposes, several enhancements would be needed for production-scale deployment:</p>
+                
+                <ul>
+                    <li><strong>Database Integration:</strong> Moving from CSV files to a proper database for improved data management</li>
+                    <li><strong>Caching Layer:</strong> Implementing Redis or similar caching for frequently requested recommendations</li>
+                    <li><strong>Load Balancing:</strong> Distributing requests across multiple application instances for higher availability</li>
+                    <li><strong>User Accounts:</strong> Adding user authentication to enable personalization and history tracking</li>
+                    <li><strong>API Rate Limiting:</strong> Implementing rate limiting to prevent abuse and ensure fair resource allocation</li>
+                </ul>
+                
+                <p>These enhancements would transform the current demonstration into a production-ready service capable of handling significant user loads while maintaining performance and reliability.</p>
+            </div>
+        </section>
+
         <section id="conclusion">
             <h2>Conclusion</h2>
             <p>This project demonstrates the power of content-based filtering for movie recommendations using only metadata. By leveraging NLP techniques and similarity computations, we've created a system that can identify thematically similar content without requiring user interaction data.</p>
@@ -1373,6 +1653,7 @@ def run_interactive_mode(csv_path='movies_metadata.csv'):
                 <li>Recommending niche or new content that hasn't yet garnered significant user engagement</li>
                 <li>Providing transparent, explainable recommendations based on content features</li>
                 <li>Addressing the "cold start" problem in recommendation systems</li>
+                
             </ul>
             
             <p>While content-based filtering has inherent limitations in terms of personalization, it forms a solid foundation for recommendation systems and can be effectively combined with collaborative filtering approaches in hybrid systems for even better performance.</p>
